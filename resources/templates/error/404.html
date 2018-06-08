@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>404 Error</title>
+</head>
+<link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+<link href="https://fonts.googleapis.com/css?family=Miriam+Libre:700|Roboto:100,300,400" rel="stylesheet">
+
+<body>
+<center>
+
+    <table class="button" style="padding-top: 2vw; padding-bottom: 2vw;">
+        <tr>
+            <td>
+                <center>
+                    <span class="warning" th:text="${message}"/>
+                </center>
+            </td>
+        </tr>
+    </table>
+
+</center>
+</body>
+</html>

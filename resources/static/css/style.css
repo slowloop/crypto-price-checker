@@ -1,0 +1,68 @@
+
+body {
+    background-color: blue;
+}
+.coin_name {
+    font-family: 'Miriam Libre', sans-serif;
+    color: white;
+    font-size: 4vw;
+    cursor: default;
+    padding-bottom: 10px;
+}
+.button, .button2 {
+    width: 40vw;
+    background-color: white;
+}
+.container1, .container2 {
+    width: 40vw;
+    background-color: white;
+    padding-top: 2.025vw;
+    padding-bottom: 2.025vw;
+}
+.warning {
+    font-family: 'Roboto', sans-serif;
+    font-size: 5vw;
+    font-weight: 300;
+}
+.exception {
+    font-family: 'Roboto', sans-serif;
+    font-size: 3vw;
+    font-weight: 300;
+}
+.price {
+    font-family: 'Roboto', sans-serif;
+    font-size: 6.5vw;
+    font-weight: 300;
+}
+.percent_1h, .percent_24h, .rank {
+    font-family: 'Roboto', sans-serif;
+    font-size: 2vw;
+    font-weight: 400;
+    color: black;
+}
+.currency {
+    font-family: 'Roboto', sans-serif;
+    font-size: 2.5vw;
+    font-weight: 400;
+}
+.text td {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.5vw;
+    font-weight: 400;
+}
+input[type=text] {
+    border: none;
+    width:200px;
+    padding: 5px 5px;
+    font-family: 'Roboto', sans-serif;
+    font-size:20px;
+    font-weight: 400;
+}
+input[type=submit] {
+    border: none;
+    cursor: pointer;
+    padding: 5px 5px;
+    font-family: 'Roboto', sans-serif;
+    font-size:20px;
+    font-weight: 400;
+}

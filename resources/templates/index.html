@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Coin-Price-Checker</title>
+</head>
+<link rel="stylesheet" type="text/css" th:href="@{/css/style.css}">
+<link href="https://fonts.googleapis.com/css?family=Miriam+Libre:700|Roboto:100,300,400" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<body>
+
+<center>
+
+    <form th:object="${cryptocurrency}" method="get">
+        <p><input type="text" th:field="*{name}" placeholder="Enter coin name" /> <input type="submit" value="Search" /></p>
+    </form>
+
+    </br>
+
+    <table class="coin_name">
+        <tr>
+            <td th:text="${name}"/>
+        </tr>
+    </table>
+
+    <table class="button" style="padding-top: 2.025vw; padding-bottom: 2.025vw;" th:if="${change_24h} < 0">
+        <tr>
+            <td>
+                <center>
+                    <span class="warning" id="warning">NOT SAFE TO CHECK</span>
+                    <span class="currency" id="currency" th:text="''" />
+                </center>
+            </td>
+        </tr>
+        <tr>
+            <td class="hidden_chart">
+                <center>
+                    <canvas id="myCanvas" width="660" height="200" style="background-color: white; width: 80%">
+                        Your browser does not support the HTML5 canvas tag.</canvas>
+                </center>
+                <center>
+                    <span style="font-family: 'Roboto', sans-serif; font-size: 2.5vw; font-weight: 400; color: black;">1 week</span>
+                </center>
+            </td>
+            <td>
+                <center>
+                    <span class="exception">(click to check anyways.)</span>
+                </center>
+            </td>
+        </tr>
+    </table>
+    <table class="button2" th:if="${change_24h} < 0" style="line-height: 1.1;">
+        <tr>
+            <td width="33%"><center><span class="percent_1h" th:text="''" /></center></td>
+            <td width="33%"><center><span class="percent_24h" th:text="''" /></center></td>
+            <td width="33%"><center><span class="rank" id="rank" th:text="''" /></center></td>
+        </tr>
+        <tr class="text">
+            <td><center><span class="percent_1h_text" th:text="''" /></center></td>
+            <td><center><span class="percent_24h_text" th:text="''" /></center></td>
+            <td><center><span class="rank_text" th:text="''" /></center></td>
+        </tr>
+    </table>
+
+    <table class="container1" th:if="${change_24h} > 0">
+        <tr>
+            <td>
+                <center>
+                    <span class="price" th:text="${price}" />
+                    <span class="currency" th:text="USD" />
+                </center>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <center>
+                    <canvas id="myCanvas2" width="660" height="200" style="background-color: white; width: 80%">
+                        Your browser does not support the HTML5 canvas tag.</canvas>
+                </center>
+                <center>
+                    <span style="font-family: 'Roboto', sans-serif; font-size: 2.5vw; font-weight: 400; color: black;">1 week</span>
+                </center>
+            </td>
+        </tr>
+    </table>
+    <table class="container2" style="border-top-style: solid; border-color: #F0F0F0; line-height: 1.1;" th:if="${change_24h} > 0">
+        <tr>
+            <td width="33%"><center><span class="percent_1h" th:text="${change_1h} + '%'" /></center></td>
+            <td width="33%"><center><span class="percent_24h" th:text="${change_24h} + '%'" /></center></td>
+            <td width="33%"><center><span class="rank" th:text="${rank}" /></center></td>
+        </tr>
+        <tr class="text">
+            <td><center>1 hour</center></td>
+            <td><center>24 hour</center></td>
+            <td><center>rank</center></td>
+        </tr>
+    </table>
+
+</center>
+</body>
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+$(document).ready(function(){
+
+    $(".button").css('cursor','pointer');
+
+    $(".button2").hide();
+    $(".hidden_chart").hide();
+
+    <!--
+    //Make the 1 hour and 24 hour percentages either green or red (green if above 0 and red if below 0).
+    //-->
+    $(".percent_1h").css('color', ([[${change_1h}]] > 0) ? 'green' : 'red');
+    $(".percent_24h").css('color', ([[${change_24h}]] > 0) ? 'green' : 'red');
+
+    <!--
+    //Add the '+' symbol in front of the 1 hour and/or 24 hour percentages if above 0.
+    //-->
+    $(".percent_1h").text(([[${change_1h}]] > 0) ? '+[[${change_1h}]]%' : '[[${change_1h}]]%');
+    $(".percent_24h").text(([[${change_24h}]] > 0) ? '+[[${change_24h}]]%' : '[[${change_24h}]]%');
+
+    <!--
+    //Alert message if coin can't be found.
+    //-->
+    if([[${found}]] == false && [[${coin}]] != null){
+
+        alert("Coin couldn't be found!");
+    }
+
+    <!--
+    //Create a minimalistic 1 week price chart.
+    //-->
+    var name;
+    var list = [[${list}]];
+    var move1 = 100;
+    var move2 = 100;
+    var move3 = 100;
+    var move4 = 100;
+    var move5 = 100;
+    var move6 = 100;
+    var move7 = 100;
+
+    <!--
+    //Determine the position for each line and arc.
+    //-->
+    for(i = 0; i < list.length; i++){
+
+        for(a = 0; a < list.length; a++){
+
+            if(list[i] > list[a]){
+
+                if(i == 0){
+                    move1 -= 10;
+                }
+                if(i == 1){
+                    move2 -= 10;
+                }
+                if(i == 2){
+                    move3 -= 10;
+                }
+                if(i == 3){
+                    move4 -= 10;
+                }
+                if(i == 4){
+                    move5 -= 10;
+                }
+                if(i == 5){
+                    move6 -= 10;
+                }
+                if(i == 6){
+                    move7 -= 10;
+                }
+            }
+        }
+    }
+
+    for(c = 0; c < list.length; c++){
+
+        if(list[c] < [[${line}]]){
+
+            if(c == 0){
+                move1 = 160 - (100 - move1);
+            }
+            if(c == 1){
+                move2 = 160 - (100 - move2);
+            }
+            if(c == 2){
+                move3 = 160 - (100 - move3);
+            }
+            if(c == 3){
+                move4 = 160 - (100 - move4);
+            }
+            if(c == 4){
+                move5 = 160 - (100 - move5);
+            }
+            if(c == 5){
+                move6 = 160 - (100 - move6);
+            }
+            if(c == 6){
+                move7 = 160 - (100 - move7);
+            }
+        }
+    }
+
+    <!--
+    //Determine which canvas to draw on. If 24 hour percentage is above 0 then draw on 'myCanvas2' otherwise draw on myCanvas.
+    //-->
+    if([[${change_24h}]] > 0){
+        name = "myCanvas2";
+    }
+    else{
+        name = "myCanvas";
+    }
+
+    <!--
+    //Draw all the shapes for the 1 week price chart.
+    //-->
+    var line = document.getElementById(name).getContext("2d");
+    line.beginPath();
+    line.moveTo(30,100);
+    line.lineTo(630,100);
+    line.strokeStyle="#808080";
+    line.setLineDash([7, 15]);
+    line.lineWidth=1;
+    line.stroke();
+
+    var c1 = document.getElementById(name).getContext("2d");
+    c1.beginPath();
+    c1.moveTo(130,move6);
+    c1.lineTo(30,move7);
+    c1.lineWidth=6;
+    c1.strokeStyle="black";
+    line.setLineDash([]);
+    c1.stroke();
+
+    c1.beginPath();
+    c1.moveTo(230,move5);
+    c1.lineTo(130,move6);
+    c1.stroke();
+
+    c1.beginPath();
+    c1.moveTo(330,move4);
+    c1.lineTo(230,move5);
+    c1.stroke();
+
+    c1.beginPath();
+    c1.moveTo(430,move3);
+    c1.lineTo(330,move4);
+    c1.stroke();
+
+    c1.beginPath();
+    c1.moveTo(530,move2);
+    c1.lineTo(430,move3);
+    c1.stroke();
+
+    c1.beginPath();
+    c1.moveTo(630,move1);
+    c1.lineTo(530,move2);
+    c1.stroke();
+
+    c1.beginPath();
+    c1.arc(30, move7, 8, 0, 2 * Math.PI);
+    c1.lineWidth=8;
+    c1.strokeStyle="black";
+    c1.stroke();
+    c1.fillStyle = "white";
+    c1.fill();
+
+    c1.beginPath();
+    c1.arc(130, move6, 8, 0, 2 * Math.PI);
+    c1.lineWidth=8;
+    c1.strokeStyle="black";
+    c1.stroke();
+    c1.fillStyle = "white";
+    c1.fill();
+
+    c1.beginPath();
+    c1.arc(230, move5, 8, 0, 2 * Math.PI);
+    c1.lineWidth=8;
+    c1.strokeStyle="black";
+    c1.stroke();
+    c1.fillStyle = "white";
+    c1.fill();
+
+    c1.beginPath();
+    c1.arc(330, move4, 8, 0, 2 * Math.PI);
+    c1.lineWidth=8;
+    c1.strokeStyle="black";
+    c1.stroke();
+    c1.fillStyle = "white";
+    c1.fill();
+
+    c1.beginPath();
+    c1.arc(430, move3, 8, 0, 2 * Math.PI);
+    c1.lineWidth=8;
+    c1.strokeStyle="black";
+    c1.stroke();
+    c1.fillStyle = "white";
+    c1.fill();
+
+    c1.beginPath();
+    c1.arc(530, move2, 8, 0, 2 * Math.PI);
+    c1.lineWidth=8;
+    c1.strokeStyle="black";
+    c1.stroke();
+    c1.fillStyle = "white";
+    c1.fill();
+
+    c1.beginPath();
+    c1.arc(630, move1, 8, 0, 2 * Math.PI);
+    c1.lineWidth=8;
+    c1.strokeStyle="black";
+    c1.stroke();
+    c1.fillStyle = "white";
+    c1.fill();
+
+    <!--
+    //A coin's price information will be hidden behind a warning message if the 24 hour percentage change is below 0.
+    //However, clicking the warning message will reveal the coin's price information.
+    //-->
+    $(".button").click(function(){
+        $(".hidden_chart").show();
+
+        $(this).css('cursor','default');
+
+        $(".button2").show();
+        $(".button2").css('border-top-style', 'solid');
+        $(".button2").css('border-color', '#F0F0F0');
+        $(".button2").css('padding-top', '1.9vw');
+        $(".button2").css('padding-bottom', '1.9vw');
+
+        $(".percent_1h_text").text("1 hour");
+        $(".percent_1h").text(([[${change_1h}]] > 0) ? '+[[${change_1h}]]%' : '[[${change_1h}]]%');
+
+        $(".percent_24h_text").text("24 hour");
+        $(".percent_24h").text("[[${change_24h}]]%");
+
+        $(".rank_text").text("rank");
+        $("#rank").text([[${rank}]]);
+
+        $(".warning").css('font-size','6.5vw');
+        $("#warning").text([[${price}]]);
+
+        $(".exception").hide();
+
+        $("#currency").text("USD");
+    });
+});
+/*]]>*/
+</script>
+</html>
